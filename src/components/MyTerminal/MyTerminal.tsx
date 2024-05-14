@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment, useRef } from "react";
 import { useAppSelector } from "@/store";
 import CommandOutputType = MyTerminal.CommandOutputType;
 import OutputType = MyTerminal.OutputType;
@@ -9,8 +9,7 @@ import TextOutputType = MyTerminal.TextOutputType;
 import OutputStatusType = MyTerminal.OutputStatusType;
 import type { CollapseProps } from "antd";
 import { Collapse, Input } from "antd";
-
-// import "./antdStyle.less";
+import { TerminalWrapper } from "./cpnStyle";
 
 // TODO: 重写组件样式
 
@@ -29,22 +28,51 @@ function MyTerminal(
 ) {
   // const { user } = toRefs(props);
 
-  // // 终端实例对象
-  // const terminalRef = ref();
-  // // 控制折叠
+  // 终端实例对象
+  const terminalRef = useRef(null);
+  // 控制折叠
   const [activeKeys, setActiveKeys] = useState<number[]>([]);
-  // // 输出列表
+  // 输出列表
   const [outputList, setOutputList] = useState<OutputType[]>([]);
-  // // 命令列表
+  // 命令列表
   const [commandList, setCommandList] = useState<CommandOutputType[]>([]);
-  // // 命令输入框实例对象
-  // const commandInputRef = ref();
+  // 命令输入框实例对象
+  const commandInputRef = useRef(null);
 
-  // // 命令是否运行
+  // 命令是否运行
   const [isRunning, setIsRunning] = useState(false);
 
-  // // 引入终端配置状态
+  // 引入终端配置状态
   const configStore = useAppSelector((state) => state.config);
+
+  // 初始命令
+  const initCommand: CommandInputType = {
+    text: "",
+    placeholder: "",
+  };
+
+  // 待用户输入的命令
+  const [inputCommand, setInputCommand] = useState({ ...initCommand });
+
+  // 全局记录当前的命令，便于写入结果
+  let currentNewCommand: CommandOutputType;
+
+  // TODO: 历史记录 hooks
+  // const {
+  //   commandHistoryPos,
+  //   showPrevCommand,
+  //   showNextCommand,
+  //   listCommandHistory
+  // } = useHistory(commandList.value, inputCommand)
+
+  // TODO: hint hooks
+  // const { hint, setHint, debounceSetHint } = useHint()
+
+  //TODO: 提交命令（回车）
+  const doSubmitCommand = () => {
+    setIsRunning(true);
+    // setHint('')
+  };
 
   let [mainStyle, setMainStyle] = useState({});
   useEffect(() => {
@@ -89,6 +117,7 @@ function MyTerminal(
   //   },
   // ]);
 
+  // 点击终端
   function handleClickWrapper(event: Event): void {
     //@ts-ignore
     if (event.target.className === "terminal") {
@@ -96,31 +125,31 @@ function MyTerminal(
     }
   }
   return (
-    <div
-      className="terminal-wrapper"
-      style={wrapperStyle}
-      onClick={() => handleClickWrapper(e)}
-    >
-      <div className="terminal" style={mainStyle}>
-        <Collapse
-          activeKey={activeKeys}
-          bordered={false}
-          expand-icon-position="right"
-        >
-          {/* {outputList.forEach(() => (
-            <Fragment></Fragment>
-          ))} */}
-        </Collapse>
-        <div className="terminal-row">
-          <span className="commant-input-prompt">
-            <Input className="command-input"></Input>
-          </span>
+    <TerminalWrapper>
+      {" "}
+      <div className="terminal-wrapper" style={wrapperStyle}>
+        <div ref={terminalRef} className="terminal" style={mainStyle}>
+          <Collapse
+            activeKey={activeKeys}
+            bordered={false}
+            expand-icon-position="right"
+          >
+            {/* {outputList.forEach(() => (
+          <Fragment></Fragment>
+        ))} */}
+          </Collapse>
+
+          <div className="terminal-row">
+            <span className="command-input-prompt"></span>
+            <Input ref={commandInputRef} className="command-input"></Input>
+          </div>
+
+          {/* 输入提示 */}
+          {!isRunning ? <div className="terminal-row"></div> : null}
+          {/* <div style={{margin-bottom: '16px'}} /> */}
         </div>
-        {/* 输入提示 */}
-        {!isRunning ? <div className="terminal-row"></div> : null}
-        {/* <div style={{margin-bottom: '16px'}} /> */}
       </div>
-    </div>
+    </TerminalWrapper>
   );
 }
 
