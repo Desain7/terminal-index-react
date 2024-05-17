@@ -11,8 +11,6 @@ import type { CollapseProps } from "antd";
 import { Collapse, Input } from "antd";
 import { TerminalWrapper } from "./cpnStyle";
 
-// TODO: 重写组件样式
-
 function MyTerminal(
   props: {
     height?: string | number;

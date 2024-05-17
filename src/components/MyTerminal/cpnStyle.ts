@@ -44,6 +44,10 @@ export const TerminalWrapper = styled.div`
     padding: 0 11px;
     color: white;
     font-size: 16px;
+    background-color: transparent !important;
+  }
+  .ant-input-outlined {
+    border-width: 0;
   }
 
   input {

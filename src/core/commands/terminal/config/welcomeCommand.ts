@@ -1,0 +1,26 @@
+import { CommandType } from "../../../command";
+import { changeWelcomeTextsAction } from "@/store/modules/config";
+
+/**
+ * 自定义终端欢迎语
+ */
+const welcomeCommand: CommandType = {
+  func: "welcome",
+  name: "自定义终端欢迎语",
+  alias: [],
+  params: [
+    {
+      key: "texts",
+      desc: "终端提示文本（支持多个值，不填则无欢迎语）",
+      required: false,
+    },
+  ],
+  options: [],
+  async action(options, terminal) {
+    const { _ } = options;
+    let welcomeTexts = _;
+    changeWelcomeTextsAction(welcomeTexts);
+  },
+};
+
+export default welcomeCommand;

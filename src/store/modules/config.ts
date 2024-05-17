@@ -58,5 +58,6 @@ export const {
   changeBackgroundAction,
   changeHintActon,
   changeWelcomeTextsAction,
+  resetConfigAction,
 } = configSlice.actions;
 export default configSlice.reducer;
