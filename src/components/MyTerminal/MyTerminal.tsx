@@ -18,20 +18,24 @@ import MyDayjs from "@/plugins/myDayjs";
 import { registerShortcuts } from "./shortcuts";
 import ContentOutput from "./ContentOutput";
 
-function MyTerminal(
-  props: {
-    height?: string | number;
-    fullScreen?: boolean;
-    user?: UserType;
+function MyTerminal(props: {
+  height?: string | number;
+  fullScreen?: boolean;
+  user?: UserType;
 
-    onSubmitCommand?: (inputText: string) => void;
-  } = {
+  onSubmitCommand?: (inputText: string) => void;
+}) {
+  const [prop, setProp] = useState({
     height: "400px",
     fullScreen: false,
     user: LOCAL_USER as any,
-  }
-) {
-  const { user } = props;
+  });
+
+  useEffect(() => {
+    setProp(Object.assign(prop, props));
+  }, [props]);
+
+  const { user } = prop;
 
   // 终端实例对象
   const terminalRef = useRef(null);
@@ -132,7 +136,7 @@ function MyTerminal(
     setCurrentNewCommand(newCommand);
     console.log("newCommand", newCommand);
     // 执行命令
-    await props.onSubmitCommand?.(inputText);
+    await prop.onSubmitCommand?.(inputText);
     // 添加输出（为空也要输出换行）
     setOutputList((prevOutputList) => [...prevOutputList, newCommand]);
     // 不为空字符串才算是有效命令
@@ -161,17 +165,16 @@ function MyTerminal(
 
   // 输入提示符
   const [prompt, setPrompt] = useState("");
-  // useEffect(() => {
-  //   setPrompt(`${user?.username}`);
-  // });
+  useEffect(() => {
+    setPrompt(`${user?.username}`);
+  }, [user]);
 
   // 当前时间
   const [curTime, setCurTime] = useState("");
 
   const [curPrompt, setCurPrompt] = useState("");
   useEffect(() => {
-    // ${user!.username}
-    setCurPrompt(`[Test ${curTime}]$`);
+    setCurPrompt(`[${user?.username} ${curTime}]$`);
   }, [curTime]);
 
   // 终端主样式
@@ -185,13 +188,13 @@ function MyTerminal(
       right: 0,
     };
     setMainStyle(
-      props.fullScreen
+      prop.fullScreen
         ? fullScreenStyle
         : {
-            height: props.height,
+            height: prop.height,
           }
     );
-  }, [props.fullScreen]);
+  }, [prop.fullScreen]);
   // console.log(mainStyle);
 
   // 终端包装类主样式
@@ -439,26 +442,30 @@ function MyTerminal(
             .filter((output) => !output.collapsible)
             .map((output, index) => {
               if (!output.collapsible) {
-                return output.type === "command" ? (
-                  <Fragment>
-                    <div className="terminal-row">
-                      <span className="mr-2.5 user-select-none">
-                        {`[${prompt} ${output.createTime}]`}
-                      </span>
-                      <span>{output.text}</span>
-                    </div>
-                    {output.resultList?.map((result, idx) => {
-                      return (
-                        <div key={idx} className="terminal-row">
-                          <ContentOutput output={result}></ContentOutput>
+                return (
+                  <Fragment key={index}>
+                    {output.type === "command" ? (
+                      <Fragment>
+                        <div className="terminal-row">
+                          <span className="mr-2.5 user-select-none">
+                            {`[${prompt} ${output.createTime}]$`}
+                          </span>
+                          <span>{output.text}</span>
                         </div>
-                      );
-                    })}
+                        {output.resultList?.map((result, idx) => {
+                          return (
+                            <div key={idx} className="terminal-row">
+                              <ContentOutput output={result}></ContentOutput>
+                            </div>
+                          );
+                        })}
+                      </Fragment>
+                    ) : (
+                      <div className="terminal-row">
+                        <ContentOutput output={output}></ContentOutput>
+                      </div>
+                    )}
                   </Fragment>
-                ) : (
-                  <div className="terminal-row">
-                    <ContentOutput output={output}></ContentOutput>
-                  </div>
                 );
               }
             })}
