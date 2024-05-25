@@ -1,7 +1,7 @@
 import { CommandType } from "./command";
 import searchCommands from "./commands/search/searchCommands";
 import gotoCommand from "./commands/gotoCommand";
-import spaceCommands from "./commands/space/spaceCommands";
+// import spaceCommands from "./commands/space/spaceCommands";
 import dateCommand from "./commands/dateCommand";
 import clearCommand from "./commands/terminal/clearCommand";
 import historyCommand from "./commands/terminal/historyCommand";
@@ -14,7 +14,7 @@ import helpCommand from "./commands/terminal/help/helpCommand";
 import infoCommand from "./commands/terminal/info/infoCommand";
 import pingCommand from "./commands/pingCommand";
 import hintCommand from "./commands/terminal/config/hintCommand";
-import todoCommand from "./commands/todo/todoCommand";
+// import todoCommand from "./commands/todo/todoCommand";
 import musicCommand from "./commands/relax/music/musicCommand";
 import moyuCommand from "./commands/relax/moyu/moyuCommand";
 import shortcutCommand from "./commands/terminal/shortcut/shortcutCommand";
@@ -23,7 +23,7 @@ import hotCommand from "./commands/hot/hotCommand";
 import chatCommand from "./commands/chat/chatCommand"; // 被墙
 import yiyanCommand from "./commands/fighting/yiyan/yiyanCommand";
 import newsCommand from "./commands/news/newsCommand";
-import codeCommand from "./commands/code/codeCommand";
+// import codeCommand from "./commands/code/codeCommand";
 
 /**
  * 命令列表（数组元素顺序会影响 help 命令的展示顺序）
@@ -32,14 +32,14 @@ const commandList: CommandType[] = [
   shortcutCommand,
   gotoCommand,
   ...searchCommands,
-  ...spaceCommands,
+  // ...spaceCommands,
   ...userCommands,
   hotCommand,
-  codeCommand,
+  // codeCommand,
   chatCommand,
   yiyanCommand,
   newsCommand,
-  todoCommand,
+  // todoCommand,
   timingCommand,
   dateCommand,
   clearCommand,

@@ -1,7 +1,11 @@
+"use client";
 import MyTerminal from "@/components/MyTerminal/MyTerminal";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+    console.log("home init");
+  }, []);
   return (
     <Fragment>
       {" "}

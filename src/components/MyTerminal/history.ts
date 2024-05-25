@@ -44,6 +44,7 @@ const useHistory = (
 
   return {
     commandHistoryPos,
+    setCommandHistoryPos,
     listCommandHistory,
     showNextCommand,
     showPrevCommand,

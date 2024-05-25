@@ -1,7 +1,7 @@
 import { CommandType } from "../../command";
-import { defineAsyncComponent } from "vue";
 import ComponentOutputType = MyTerminal.ComponentOutputType;
 import addCommand from "./subCommands/addCommand";
+import React from "react";
 
 /**
  * 待办事项命令
@@ -27,7 +27,7 @@ const todoCommand: CommandType = {
     if (_.length < 1) {
       const output: ComponentOutputType = {
         type: "component",
-        component: defineAsyncComponent(() => import("./TodoBox")),
+        component: React.lazy(() => import("./TodoBox")),
       };
       terminal.writeResult(output);
       return;

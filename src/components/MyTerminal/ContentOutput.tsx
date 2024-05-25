@@ -39,9 +39,10 @@ function ContentOutput(props: OutputProps) {
         <Fragment>
           {outputTagColor && <Tag color={outputTagColor}>{output.status}</Tag>}
           {output.type === "text" && (
-            <span className="output w-95/100 whitespace-normal">
-              {smartText(output.text)}
-            </span>
+            <span
+              className="output w-95/100 whitespace-normal"
+              dangerouslySetInnerHTML={{ __html: smartText(output.text) }}
+            ></span>
           )}
         </Fragment>
       )}

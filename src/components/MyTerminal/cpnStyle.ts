@@ -19,11 +19,9 @@ export const TerminalWrapper = styled.div`
     font-size: 16px;
   }
 
-  .ant-collapse-icon-position-right
-    > .ant-collapse-item
-    > .ant-collapse-header {
-    color: white;
-    padding: 0;
+  .ant-collapse-header {
+    color: white !important;
+    padding: 0 !important;
   }
 
   .ant-collapse {
@@ -48,6 +46,9 @@ export const TerminalWrapper = styled.div`
   }
   .ant-input-outlined {
     border-width: 0;
+  }
+  .ant-input-outlined:focus-within {
+    box-shadow: none;
   }
 
   input {
