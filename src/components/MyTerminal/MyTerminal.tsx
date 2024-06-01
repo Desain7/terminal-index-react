@@ -1,5 +1,13 @@
 "use client";
-import React, { useEffect, useState, Fragment, useRef, Children } from "react";
+import React, {
+  useEffect,
+  useState,
+  Fragment,
+  useRef,
+  Children,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import { useAppSelector } from "@/store";
 import CommandOutputType = MyTerminal.CommandOutputType;
 import OutputType = MyTerminal.OutputType;
@@ -18,17 +26,20 @@ import MyDayjs from "@/plugins/myDayjs";
 import { registerShortcuts } from "./shortcuts";
 import ContentOutput from "./ContentOutput";
 
-function MyTerminal(props: {
-  height?: string | number;
-  fullScreen?: boolean;
-  user?: UserType;
-
-  onSubmitCommand?: (inputText: string) => void;
-}) {
+const MyTerminal = forwardRef(function MyTerminal(
+  props: {
+    height?: string | number;
+    fullScreen?: boolean;
+    user?: UserType;
+    onSubmitCommand?: (inputText: string) => void;
+  },
+  ref
+) {
   const [prop, setProp] = useState({
     height: "400px",
     fullScreen: false,
     user: LOCAL_USER as any,
+    onSubmitCommand: () => {},
   });
 
   useEffect(() => {
@@ -65,7 +76,9 @@ function MyTerminal(props: {
 
   // 全局记录当前的命令，便于写入结果
   // 记录当前命令，便于写入结果
-  const [currentNewCommand, setCurrentNewCommand] = useState({});
+  const [currentNewCommand, setCurrentNewCommand] = useState({
+    resultList: [],
+  });
 
   useEffect(() => {
     registerShortcuts(terminal);
@@ -98,7 +111,7 @@ function MyTerminal(props: {
       setCurTime(MyDayjs(`${new Date()}`).format("HH:mm:ss"));
     }, 1000);
 
-    console.log("terminal init end");
+    // console.log("terminal init end");
   }, []);
 
   // 历史记录 hooks
@@ -133,30 +146,55 @@ function MyTerminal(props: {
       resultList: [],
     };
 
+    /**
+     * 1.使用 push newCommand
+     *后续其他地方使用的都是 currentNewCommand，二者不会指向*同一个引用，所以 resultList 不会更新
+     * 2.使用 push currentNewCommand
+     * 第一次更新时，因为需要先用 newCommand 对 *currentNewCommand 进行赋值，导致更新不及时
+     */
+
     setCurrentNewCommand(newCommand);
-    console.log("newCommand", newCommand);
     // 执行命令
     await prop.onSubmitCommand?.(inputText);
     // 添加输出（为空也要输出换行）
-    setOutputList((prevOutputList) => [...prevOutputList, newCommand]);
-    // 不为空字符串才算是有效命令
-    if (inputText) {
-      setCommandList([...commandList, newCommand]);
-      // 重置当前要查看的命令位置
-      setCommandHistoryPos(commandList.length);
-    }
+    // setOutputList((prevOutputList) => {
+    //   const newOutputList = [...prevOutputList, currentNewCommand];
+    //   console.log("--------setOutputList---------", newOutputList);
+    //   return newOutputList;
+    // });
+    // // 不为空字符串才算是有效命令
+    // if (inputText) {
+    //   setCommandList([...commandList, currentNewCommand]);
+    //   // 重置当前要查看的命令位置
+    //   setCommandHistoryPos(commandList.length);
+    // }
     setInputCommand({ ...initCommand });
     // 默认展开折叠面板
     setActiveKeys([...activeKeys, outputList.length - 1]);
     // 自动滚到底部
     setTimeout(() => {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-      console.log(123, terminalRef.scrollTop);
+      // console.log(123, terminalRef.scrollTop);
       // 聚焦
       focusInput();
     }, 50);
     setIsRunning(false);
   };
+
+  useEffect(() => {
+    setOutputList((prevOutputList) => {
+      const newOutputList = [...prevOutputList, currentNewCommand];
+      console.log("--------setOutputList---------", newOutputList);
+      return newOutputList;
+    });
+    // 不为空字符串才算是有效命令
+    if (inputCommand.text) {
+      setCommandList([...commandList, currentNewCommand]);
+      // 重置当前要查看的命令位置
+      setCommandHistoryPos(commandList.length);
+    }
+    console.log("oooooooooo", outputList);
+  }, [currentNewCommand]);
 
   // 输入框内容改变时，触发输入提示
   useEffect(() => {
@@ -219,6 +257,20 @@ function MyTerminal(props: {
     setOutputList([]);
   };
 
+  const addNewOutput = (newOutput: any) => {
+    console.log("------add-new-output-------", newOutput);
+    setCurrentNewCommand((prevCommand) => {
+      return {
+        ...prevCommand,
+        resultList: [...prevCommand.resultList, newOutput],
+      };
+    });
+    console.log(
+      "------------------after-add----------------",
+      currentNewCommand
+    );
+  };
+
   /**
    * 写命令文本结果
    * @param text
@@ -231,11 +283,8 @@ function MyTerminal(props: {
       createTime: curTime,
       status,
     };
-    setCurrentNewCommand(
-      Object.assign(currentNewCommand, {
-        resultList: [...currentNewCommand.resultList, newOutput],
-      })
-    );
+    console.log("----------write-text-result-----------");
+    addNewOutput(newOutput);
   };
 
   /**
@@ -243,6 +292,7 @@ function MyTerminal(props: {
    * @param text
    */
   const writeTextErrorResult = (text: string) => {
+    console.log("-----------------write-text-error-result------------", text);
     writeTextResult(text, "error");
   };
 
@@ -251,6 +301,7 @@ function MyTerminal(props: {
    * @param text
    */
   const writeTextSuccessResult = (text: string) => {
+    console.log("-----------------write-text-success-result------------", text);
     writeTextResult(text, "success");
   };
 
@@ -259,11 +310,8 @@ function MyTerminal(props: {
    * @param output
    */
   const writeResult = (output: OutputType) => {
-    setCurrentNewCommand(
-      Object.assign(currentNewCommand, {
-        resultList: [...currentNewCommand.resultList, output],
-      })
-    );
+    console.log("--------write-result--------");
+    addNewOutput(output);
   };
 
   /**
@@ -280,7 +328,7 @@ function MyTerminal(props: {
     };
 
     setOutputList((prevOutputList) => [...prevOutputList, newOutput]);
-    // console.log("writeText", text, outputList, newOutput);
+    console.log("writeText", text, outputList, newOutput);
   };
 
   /**
@@ -380,13 +428,16 @@ function MyTerminal(props: {
     setCommandCollapsible,
   };
 
+  // 将方法暴露给父组件
+  useImperativeHandle(ref, () => terminal, []);
+
   // 点击终端
   function handleClickWrapper(event: Event): void {
     //@ts-ignore
     if (event.target.className === "terminal") {
       focusInput();
     }
-    console.log("click");
+    // console.log("click");
   }
 
   // 折叠面板 Items
@@ -493,6 +544,6 @@ function MyTerminal(props: {
       </div>
     </TerminalWrapper>
   );
-}
+});
 
 export default MyTerminal;

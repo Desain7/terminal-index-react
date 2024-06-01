@@ -25,6 +25,7 @@ export const doCommandExecute = async (
   // 解析文本，得到命令
   const command: CommandType = getCommand(text, parentCommand);
   if (!command) {
+    console.log("找不到命令", terminal);
     terminal.writeTextErrorResult("找不到命令");
     return;
   }

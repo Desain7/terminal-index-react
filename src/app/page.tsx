@@ -1,15 +1,29 @@
 "use client";
 import MyTerminal from "@/components/MyTerminal/MyTerminal";
-import { Fragment, useEffect } from "react";
+import { doCommandExecute } from "@/core/commandExecutor";
+import { Fragment, useEffect, useRef } from "react";
 
 export default function Home() {
-  useEffect(() => {
-    console.log("home init");
-  }, []);
+  const terminalRef = useRef();
+  // console.log("terminal", terminalRef);
+
+  const onSubmitCommand = async (inputText: string) => {
+    if (!inputText) {
+      return;
+    }
+    // console.log("onSubmitCommand", inputText);
+    const terminal = terminalRef.current;
+    await doCommandExecute(inputText, terminal);
+  };
+
   return (
     <Fragment>
       {" "}
-      <MyTerminal fullScreen={true}></MyTerminal>
+      <MyTerminal
+        ref={terminalRef}
+        fullScreen={true}
+        onSubmitCommand={onSubmitCommand}
+      ></MyTerminal>
       <div className="fixed bottom-2 right-2">
         <a
           href="https://beian.miit.gov.cn/"
