@@ -154,6 +154,7 @@ const MyTerminal = forwardRef(function MyTerminal(
      */
 
     setCurrentNewCommand(newCommand);
+    console.log("step1---------------------");
     // 执行命令
     await prop.onSubmitCommand?.(inputText);
     // 添加输出（为空也要输出换行）
@@ -181,7 +182,12 @@ const MyTerminal = forwardRef(function MyTerminal(
     setIsRunning(false);
   };
 
+  // TODO: 解决可折叠命令输出无法正常展示的问题
+
+  // TODO: 解决命令输出没有 type 及 inputText 参数的问题
   useEffect(() => {
+    console.log("step2---------------------");
+
     setOutputList((prevOutputList) => {
       const newOutputList = [...prevOutputList, currentNewCommand];
       console.log("--------setOutputList---------", newOutputList);
@@ -283,7 +289,7 @@ const MyTerminal = forwardRef(function MyTerminal(
       createTime: curTime,
       status,
     };
-    console.log("----------write-text-result-----------");
+    console.log("----------write-text-result-----------", newOutput);
     addNewOutput(newOutput);
   };
 
@@ -310,7 +316,7 @@ const MyTerminal = forwardRef(function MyTerminal(
    * @param output
    */
   const writeResult = (output: OutputType) => {
-    console.log("--------write-result--------");
+    console.log("--------write-result--------", output);
     addNewOutput(output);
   };
 
@@ -443,34 +449,57 @@ const MyTerminal = forwardRef(function MyTerminal(
   // 折叠面板 Items
   const [collapseItems, setCollapseItems] = useState([] as any);
 
-  useEffect(() => {
-    setCollapseItems(
-      outputList
-        .filter((output) => output.collapsible)
-        .map((output, index) => {
-          if (output.collapsible) {
-            return {
-              key: `${index}`,
-              label: output.type === "command" ? output.text : undefined,
-              children: (
-                <div className="terminal-row">
-                  {output.resultList?.map((result, idx) => {
-                    return (
-                      <div key={idx} className="terminal-row">
-                        <ContentOutput output={result}></ContentOutput>
-                      </div>
-                    );
-                  })}
-                </div>
-              ),
-            };
-          } else {
-            return {};
-          }
-        })
-    );
-    console.log("changed", "outlist", outputList);
-  }, [outputList]);
+  // useEffect(() => {
+  //   setCollapseItems(
+  //     outputList
+  //       .filter((output) => output.collapsible)
+  //       .map((output, index) => {
+  //         if (output.collapsible) {
+  //           return {
+  //             key: `${index}`,
+  //             label: output.type === "command" ? output.text : undefined,
+  //             children: (
+  //               <div className="terminal-row">
+  //                 {output.resultList?.map((result, idx) => {
+  //                   return (
+  //                     <div key={idx} className="terminal-row">
+  //                       <ContentOutput output={result}></ContentOutput>
+  //                     </div>
+  //                   );
+  //                 })}
+  //               </div>
+  //             ),
+  //           };
+  //         } else {
+  //           return {};
+  //         }
+  //       })
+  //   );
+  //   console.log("changed", "outlist", outputList);
+  // }, [outputList]);
+
+  const collapseItem = (output: OutputType) => {
+    if (output.collapsible) {
+      return [
+        {
+          label: output.type === "command" ? output.text : undefined,
+          children: (
+            <div className="terminal-row">
+              {output.resultList?.map((result, idx) => {
+                return (
+                  <div key={idx} className="terminal-row">
+                    <ContentOutput output={result}></ContentOutput>
+                  </div>
+                );
+              })}
+            </div>
+          ),
+        },
+      ];
+    } else {
+      return [];
+    }
+  };
 
   return (
     <TerminalWrapper>
@@ -481,15 +510,55 @@ const MyTerminal = forwardRef(function MyTerminal(
         onClick={handleClickWrapper}
       >
         <div ref={terminalRef} className="terminal" style={mainStyle}>
-          {/* 可折叠 */}
-          <Collapse
+          {outputList.map((output) => {
+            return (
+              <Fragment key={`${output.text}${output.createTime}`}>
+                {output.collapsible ? (
+                  // 可折叠
+                  <Collapse
+                    // activeKey={activeKeys}
+                    bordered={false}
+                    expandIconPosition="end"
+                    items={collapseItem(output)}
+                  />
+                ) : (
+                  // 不可折叠
+                  <Fragment>
+                    {output.type === "command" ? (
+                      <Fragment>
+                        <div className="terminal-row">
+                          <span className="mr-2.5 user-select-none">
+                            {`[${prompt} ${output.createTime}]$`}
+                          </span>
+                          <span>{output.text}</span>
+                        </div>
+                        {output.resultList?.map((result, idx) => {
+                          return (
+                            <div key={idx} className="terminal-row">
+                              <ContentOutput output={result}></ContentOutput>
+                            </div>
+                          );
+                        })}
+                      </Fragment>
+                    ) : (
+                      <div className="terminal-row">
+                        <ContentOutput output={output}></ContentOutput>
+                      </div>
+                    )}
+                  </Fragment>
+                )}
+              </Fragment>
+            );
+          })}
+
+          {/* <Collapse
             activeKey={activeKeys}
             bordered={false}
             expandIconPosition="end"
             items={collapseItems}
-          />
-          {/* 不可折叠 */}
-          {outputList
+          /> */}
+
+          {/* {outputList
             .filter((output) => !output.collapsible)
             .map((output, index) => {
               if (!output.collapsible) {
@@ -519,7 +588,7 @@ const MyTerminal = forwardRef(function MyTerminal(
                   </Fragment>
                 );
               }
-            })}
+            })} */}
 
           <div className="terminal-row">
             <span className="command-input-prompt">{curPrompt}</span>
